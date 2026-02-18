@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<title>FLORIDA CANNABIS FIGHTER</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Bungee&family=Press+Start+2P&family=Permanent+Marker&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: #0a0a0a;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    height: 100dvh;
+    width: 100vw;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #gameContainer {
+    width: 100vw;
+    height: 100dvh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+
+  /* TITLE SCREEN */
+  #titleScreen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1a0a2e 0%, #16213e 30%, #0f3460 60%, #1a1a2e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  #titleScreen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,0,0.03) 2px,
+      rgba(0,255,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .title-glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    animation: floatGlow 6s ease-in-out infinite;
+  }
+
+  .title-glow.green { background: #00ff41; top: 10%; left: 20%; }
+  .title-glow.purple { background: #9b59b6; top: 50%; right: 10%; animation-delay: -3s; }
+  .title-glow.orange { background: #e67e22; bottom: 10%; left: 40%; animation-delay: -1.5s; }
+
+  @keyframes floatGlow {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -30px) scale(1.2); }
+  }
+
+  .title-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .title-florida {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(18px, 5vw, 36px);
+    color: #f39c12;
+    letter-spacing: 0.3em;
+    text-shadow: 0 0 20px rgba(243,156,18,0.5);
+    margin-bottom: 5px;
+  }
+
+  .title-cannabis {
+    font-family: 'Bungee Shade', sans-serif;
+    font-size: clamp(28px, 8vw, 64px);
+    background: linear-gradient(180deg, #00ff41, #39ff14, #00b300);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 15px rgba(0,255,65,0.6));
+    line-height: 1.1;
+  }
+
+  .title-fighter {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(24px, 7vw, 52px);
+    color: #e74c3c;
+    letter-spacing: 0.2em;
+    text-shadow: 
+      3px 3px 0 #000,
+      0 0 20px rgba(231,76,60,0.5),
+      0 0 40px rgba(231,76,60,0.3);
+    margin-top: 5px;
+  }
+
+  .leaf-divider {
+    font-size: clamp(20px, 5vw, 40px);
+    margin: 15px 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  .start-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(10px, 2.5vw, 16px);
+    color: #00ff41;
+    background: transparent;
+    border: 2px solid #00ff41;
+    padding: 15px 40px;
+    cursor: pointer;
+    margin-top: 20px;
+    animation: blink 1.5s step-end infinite;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .start-btn:hover, .start-btn:active {
+    background: #00ff41;
+    color: #000;
+    box-shadow: 0 0 30px rgba(0,255,65,0.5);
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* CHARACTER SELECT */
+  #selectScreen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #0d0d0d 0%, #1a0a2e 50%, #0d0d0d 100%);
+    display: none;
+    flex-direction: column;
+    z-index: 90;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .select-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(14px, 3.5vw, 28px);
+    color: #f39c12;
+    text-align: center;
+    padding: 15px 10px 5px;
+    text-shadow: 0 0 10px rgba(243,156,18,0.4);
+  }
+
+  .select-subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(7px, 1.8vw, 11px);
+    color: #00ff41;
+    text-align: center;
+    padding-bottom: 10px;
+    animation: blink 1.5s step-end infinite;
+  }
+
+  .char-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px 15px;
+    flex: 1;
+  }
+
+  .char-card {
+    background: linear-gradient(135deg, rgba(30,30,50,0.9), rgba(20,20,35,0.95));
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .char-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--card-glow);
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: 12px;
+  }
+
+  .char-card:hover::before, .char-card:active::before, .char-card.selected::before {
+    opacity: 0.15;
+  }
+
+  .char-card.selected {
+    border-color: #00ff41;
+    box-shadow: 0 0 20px rgba(0,255,65,0.3), inset 0 0 20px rgba(0,255,65,0.1);
+  }
+
+  .char-emoji {
+    font-size: clamp(32px, 8vw, 56px);
+    text-align: center;
+    margin-bottom: 6px;
+    filter: drop-shadow(0 0 8px var(--emoji-glow));
+  }
+
+  .char-name {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(12px, 3vw, 18px);
+    color: #fff;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .char-title-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(5px, 1.3vw, 8px);
+    color: var(--char-color);
+    text-align: center;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .char-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: clamp(5px, 1.2vw, 7px);
+    color: #aaa;
+  }
+
+  .stat-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .char-special {
+    font-size: clamp(5px, 1.2vw, 7px);
+    color: #f39c12;
+    text-align: center;
+    margin-top: 6px;
+    font-style: italic;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.5;
+  }
+
+  .fight-btn {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(16px, 4vw, 28px);
+    color: #fff;
+    background: linear-gradient(180deg, #e74c3c, #c0392b);
+    border: none;
+    padding: 15px;
+    margin: 10px 15px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    box-shadow: 0 4px 15px rgba(231,76,60,0.4);
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .fight-btn.visible {
+    display: block;
+    animation: fightPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes fightPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(231,76,60,0.4); }
+    50% { transform: scale(1.03); box-shadow: 0 4px 25px rgba(231,76,60,0.7); }
+  }
+
+  /* FIGHT SCREEN */
+  #fightScreen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    z-index: 80;
+    background: #111;
+  }
+
+  #fightCanvas {
+    flex: 1;
+    width: 100%;
+  }
+
+  /* MOBILE CONTROLS */
+  #mobileControls {
+    display: flex;
+    padding: 8px 12px 16px;
+    gap: 10px;
+    background: rgba(0,0,0,0.9);
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 48px);
+    grid-template-rows: repeat(3, 48px);
+    gap: 2px;
+  }
+
+  .dpad-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .dpad-btn:active {
+    background: rgba(0,255,65,0.3);
+    border-color: #00ff41;
+  }
+
+  .dpad-blank { background: transparent; border: none; }
+
+  .action-btns {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .action-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.3;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .action-btn:active { transform: scale(0.9); }
+
+  .btn-punch {
+    background: radial-gradient(circle, rgba(231,76,60,0.4), rgba(231,76,60,0.1));
+    border-color: #e74c3c;
+  }
+
+  .btn-kick {
+    background: radial-gradient(circle, rgba(52,152,219,0.4), rgba(52,152,219,0.1));
+    border-color: #3498db;
+  }
+
+  .btn-special {
+    background: radial-gradient(circle, rgba(0,255,65,0.4), rgba(0,255,65,0.1));
+    border-color: #00ff41;
+    width: 72px;
+    height: 72px;
+  }
+
+  .btn-block {
+    background: radial-gradient(circle, rgba(243,156,18,0.4), rgba(243,156,18,0.1));
+    border-color: #f39c12;
+    width: 52px;
+    height: 52px;
+    font-size: 7px;
+  }
+
+  /* HUD */
+  #hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .hud-player {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+  }
+
+  .hud-player.right { align-items: flex-end; }
+
+  .hud-name {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(10px, 2.5vw, 16px);
+    color: #fff;
+    text-shadow: 2px 2px 4px #000;
+  }
+
+  .hp-bar-outer {
+    width: 100%;
+    max-width: 180px;
+    height: 14px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .hp-bar-inner {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s ease;
+    position: relative;
+  }
+
+  .hp-bar-inner.p1 {
+    background: linear-gradient(90deg, #e74c3c, #27ae60);
+  }
+
+  .hp-bar-inner.p2 {
+    background: linear-gradient(270deg, #e74c3c, #e67e22);
+  }
+
+  .sp-bar-outer {
+    width: 100%;
+    max-width: 140px;
+    height: 8px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(0,255,65,0.3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .sp-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff41, #39ff14);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 6px rgba(0,255,65,0.5);
+  }
+
+  .hud-vs {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(10px, 2.5vw, 18px);
+    color: #f39c12;
+    text-shadow: 0 0 10px rgba(243,156,18,0.5);
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  .round-display {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6px, 1.5vw, 9px);
+    color: #aaa;
+    text-align: center;
+  }
+
+  /* ROUND SPLASH */
+  #roundSplash {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .splash-text {
+    font-family: 'Bungee Shade', sans-serif;
+    font-size: clamp(32px, 10vw, 72px);
+    color: #fff;
+    text-shadow: 0 0 30px rgba(255,255,255,0.5), 0 0 60px rgba(0,255,65,0.3);
+    animation: splashIn 0.5s ease-out;
+  }
+
+  @keyframes splashIn {
+    0% { transform: scale(3); opacity: 0; }
+    60% { transform: scale(0.9); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* RESULT OVERLAY */
+  #resultOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    gap: 20px;
+  }
+
+  .result-text {
+    font-family: 'Bungee Shade', sans-serif;
+    font-size: clamp(24px, 7vw, 48px);
+    text-shadow: 0 0 30px currentColor;
+  }
+
+  .result-sub {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(14px, 3.5vw, 24px);
+    color: #ccc;
+  }
+
+  .result-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(9px, 2vw, 13px);
+    padding: 12px 30px;
+    border: 2px solid #00ff41;
+    background: transparent;
+    color: #00ff41;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+  }
+
+  .result-btn:hover, .result-btn:active {
+    background: #00ff41;
+    color: #000;
+  }
+
+  /* COMBO DISPLAY */
+  #comboDisplay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(20px, 5vw, 36px);
+    color: #f39c12;
+    text-shadow: 0 0 20px rgba(243,156,18,0.6);
+    z-index: 15;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  #comboDisplay.show { opacity: 1; }
+
+  /* DAMAGE NUMBERS */
+  .dmg-number {
+    position: absolute;
+    font-family: 'Bungee', sans-serif;
+    font-size: 24px;
+    color: #e74c3c;
+    text-shadow: 2px 2px 0 #000;
+    pointer-events: none;
+    z-index: 20;
+    animation: dmgFloat 0.8s ease-out forwards;
+  }
+
+  @keyframes dmgFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1.3); }
+    100% { opacity: 0; transform: translateY(-60px) scale(0.7); }
+  }
+
+  @media (max-height: 600px) {
+    .dpad { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); }
+    .action-btn { width: 54px; height: 54px; font-size: 7px; }
+    .btn-special { width: 60px; height: 60px; }
+    .btn-block { width: 44px; height: 44px; }
+    #mobileControls { padding: 4px 8px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+  <!-- TITLE SCREEN -->
+  <div id="titleScreen">
+    <div class="title-glow green"></div>
+    <div class="title-glow purple"></div>
+    <div class="title-glow orange"></div>
+    <div class="title-content">
+      <div class="title-florida">FLORIDA</div>
+      <div class="title-cannabis">CANNABIS</div>
+      <div class="title-fighter">FIGHTER</div>
+      <div class="leaf-divider">\ud83c\udf3f\ud83d\udd25\ud83c\udf3f</div>
+      <button class="start-btn" onclick="showSelect()">PRESS START</button>
+    </div>
+  </div>
+
+  <!-- CHARACTER SELECT -->
+  <div id="selectScreen">
+    <div class="select-title">CHOOSE YOUR FIGHTER</div>
+    <div class="select-subtitle">TAP TO SELECT</div>
+    <div class="char-grid" id="charGrid"></div>
+    <button class="fight-btn" id="fightBtn" onclick="startFight()">\u2694\ufe0f FIGHT! \u2694\ufe0f</button>
+  </div>
+
+  <!-- FIGHT SCREEN -->
+  <div id="fightScreen">
+    <canvas id="fightCanvas"></canvas>
+    <div id="hud">
+      <div class="hud-player" id="hudP1">
+        <div class="hud-name" id="p1Name"></div>
+        <div class="hp-bar-outer"><div class="hp-bar-inner p1" id="p1HP" style="width:100%"></div></div>
+        <div class="sp-bar-outer"><div class="sp-bar-inner" id="p1SP" style="width:0%"></div></div>
+      </div>
+      <div style="text-align:center">
+        <div class="hud-vs">VS</div>
+        <div class="round-display" id="roundDisplay">ROUND 1</div>
+      </div>
+      <div class="hud-player right" id="hudP2">
+        <div class="hud-name" id="p2Name"></div>
+        <div class="hp-bar-outer"><div class="hp-bar-inner p2" id="p2HP" style="width:100%"></div></div>
+        <div class="sp-bar-outer"><div class="sp-bar-inner" id="p2SP" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div id="comboDisplay"></div>
+    <div id="roundSplash"><div class="splash-text" id="splashText"></div></div>
+    <div id="resultOverlay">
+      <div class="result-text" id="resultText"></div>
+      <div class="result-sub" id="resultSub"></div>
+      <button class="result-btn" onclick="showSelect()">SELECT FIGHTER</button>
+      <button class="result-btn" onclick="rematch()">REMATCH</button>
+    </div>
+    <div id="mobileControls">
+      <div class="dpad">
+        <div class="dpad-blank"></div>
+        <div class="dpad-btn" data-dir="up">\u25b2</div>
+        <div class="dpad-blank"></div>
+        <div class="dpad-btn" data-dir="left">\u25c0</div>
+        <div class="dpad-blank"></div>
+        <div class="dpad-btn" data-dir="right">\u25b6</div>
+        <div class="dpad-blank"></div>
+        <div class="dpad-btn" data-dir="down">\u25bc</div>
+        <div class="dpad-blank"></div>
+      </div>
+      <div class="action-btns">
+        <div class="action-btn btn-block" data-action="block">\ud83d\udee1\ufe0f</div>
+        <div class="action-btn btn-punch" data-action="punch">\ud83d\udc4a<br>PUNCH</div>
+        <div class="action-btn btn-kick" data-action="kick">\ud83e\uddb5<br>KICK</div>
+        <div class="action-btn btn-special" data-action="special">\ud83c\udf3f<br>SPECIAL</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== CHARACTER DATA =====================
+const CHARACTERS = [
+  {
+    id: 'kim',
+    name: 'Kim Rivers',
+    title: 'THE TRULIEVE QUEEN',
+    emoji: '\ud83d\udc69\u200d\ud83d\udcbc',
+    color: '#27ae60',
+    glowColor: 'rgba(39,174,96,0.5)',
+    bio: 'CEO of Trulieve, Florida\'s #1 cannabis empire. Built 134 dispensaries and dominates 40% of the flower market.',
+    stats: { power: 75, speed: 80, defense: 70, special: 90 },
+    specialName: '\ud83d\udcb0 HOSTILE TAKEOVER',
+    specialDesc: 'Vertical Integration Slam',
+    bodyColor: '#2c3e50',
+    accentColor: '#27ae60',
+    headType: 'businesswoman',
+    attacks: {
+      punch: { dmg: 8, range: 55, name: 'Merger Fist' },
+      kick: { dmg: 12, range: 65, name: 'Market Share Kick' },
+      special: { dmg: 30, range: 120, name: 'HOSTILE TAKEOVER', cost: 100 }
+    }
+  },
+  {
+    id: 'morgan',
+    name: 'John Morgan',
+    title: 'THE POT DADDY',
+    emoji: '\u2696\ufe0f',
+    color: '#e74c3c',
+    glowColor: 'rgba(231,76,60,0.5)',
+    bio: 'Billionaire attorney, Godfather of Amendment 2. Spent $15M+ of his own money to legalize medical cannabis in FL.',
+    stats: { power: 85, speed: 60, defense: 85, special: 85 },
+    specialName: '\ud83d\udcdc AMENDMENT SLAM',
+    specialDesc: 'Constitutional Uppercut',
+    bodyColor: '#1a1a2e',
+    accentColor: '#e74c3c',
+    headType: 'lawyer',
+    attacks: {
+      punch: { dmg: 10, range: 50, name: 'Litigation Punch' },
+      kick: { dmg: 14, range: 60, name: 'For The People Kick' },
+      special: { dmg: 35, range: 130, name: 'AMENDMENT SLAM', cost: 100 }
+    }
+  },
+  {
+    id: 'pollara',
+    name: 'Ben Pollara',
+    title: 'THE CAMPAIGN BOSS',
+    emoji: '\ud83d\udccb',
+    color: '#3498db',
+    glowColor: 'rgba(52,152,219,0.5)',
+    bio: 'Campaign manager of United for Care. Mastermind behind the 71% vote that legalized medical cannabis in FL.',
+    stats: { power: 65, speed: 90, defense: 60, special: 95 },
+    specialName: '\ud83d\uddf3\ufe0f BALLOT BLITZ',
+    specialDesc: '700K Signature Storm',
+    bodyColor: '#1e3a5f',
+    accentColor: '#3498db',
+    headType: 'strategist',
+    attacks: {
+      punch: { dmg: 7, range: 50, name: 'Petition Jab' },
+      kick: { dmg: 11, range: 60, name: 'Lobby Kick' },
+      special: { dmg: 28, range: 140, name: 'BALLOT BLITZ', cost: 100 }
+    }
+  },
+  {
+    id: 'desantis',
+    name: 'Ron DeSantis',
+    title: 'THE OPPOSITION',
+    emoji: '\ud83d\udeab',
+    color: '#9b59b6',
+    glowColor: 'rgba(155,89,182,0.5)',
+    bio: 'Florida Governor who fought Amendment 3. Created the Florida Freedom Fund PAC to defeat recreational cannabis.',
+    stats: { power: 80, speed: 65, defense: 90, special: 70 },
+    specialName: '\ud83c\udfdb\ufe0f VETO POWER',
+    specialDesc: 'Executive Order Smash',
+    bodyColor: '#2c1e3e',
+    accentColor: '#9b59b6',
+    headType: 'politician',
+    attacks: {
+      punch: { dmg: 9, range: 55, name: 'Veto Punch' },
+      kick: { dmg: 13, range: 65, name: 'Executive Kick' },
+      special: { dmg: 32, range: 110, name: 'VETO POWER', cost: 100 }
+    }
+  },
+  {
+    id: 'surterra',
+    name: 'Jake Bergmann',
+    title: 'THE SURTERRA CEO',
+    emoji: '\ud83c\udf31',
+    color: '#f39c12',
+    glowColor: 'rgba(243,156,18,0.5)',
+    bio: 'Former CEO of Surterra Wellness. Helped build one of Florida\'s top 5 cannabis operators from the ground up.',
+    stats: { power: 70, speed: 75, defense: 75, special: 80 },
+    specialName: '\ud83c\udf3f WELLNESS WAVE',
+    specialDesc: 'Full Spectrum Blast',
+    bodyColor: '#2d2d0a',
+    accentColor: '#f39c12',
+    headType: 'entrepreneur',
+    attacks: {
+      punch: { dmg: 8, range: 50, name: 'Extract Punch' },
+      kick: { dmg: 12, range: 60, name: 'Terpene Kick' },
+      special: { dmg: 29, range: 125, name: 'WELLNESS WAVE', cost: 100 }
+    }
+  },
+  {
+    id: 'cookies',
+    name: 'Cookies FL',
+    title: 'THE NEW CHALLENGER',
+    emoji: '\ud83c\udf6a',
+    color: '#1abc9c',
+    glowColor: 'rgba(26,188,156,0.5)',
+    bio: 'Cookies Florida expanded from 1 to 7 dispensaries in one year \u2014 600% growth. The disruptor shaking up FL cannabis.',
+    stats: { power: 90, speed: 85, defense: 50, special: 75 },
+    specialName: '\ud83d\udd25 COOKIE CRUMBLE',
+    specialDesc: '600% Growth Explosion',
+    bodyColor: '#0d2f2f',
+    accentColor: '#1abc9c',
+    headType: 'streetwear',
+    attacks: {
+      punch: { dmg: 11, range: 50, name: 'Cookie Crunch' },
+      kick: { dmg: 14, range: 55, name: 'Hype Kick' },
+      special: { dmg: 33, range: 100, name: 'COOKIE CRUMBLE', cost: 100 }
+    }
+  }
+];
+
+// ===================== GAME STATE =====================
+let selectedChar = null;
+let gameState = null;
+let animFrame = null;
+let canvas, ctx;
+let canvasW, canvasH;
+let keys = {};
+let lastTime = 0;
+
+// ===================== SCREENS =====================
+function showTitle() {
+  document.getElementById('titleScreen').style.display = 'flex';
+  document.getElementById('selectScreen').style.display = 'none';
+  document.getElementById('fightScreen').style.display = 'none';
+}
+
+function showSelect() {
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('selectScreen').style.display = 'flex';
+  document.getElementById('fightScreen').style.display = 'none';
+  document.getElementById('resultOverlay').style.display = 'none';
+  if (animFrame) cancelAnimationFrame(animFrame);
+  buildCharGrid();
+  selectedChar = null;
+  document.getElementById('fightBtn').classList.remove('visible');
+}
+
+function buildCharGrid() {
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = '';
+  CHARACTERS.forEach((ch, i) => {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.style.setProperty('--card-glow', ch.glowColor);
+    card.style.setProperty('--emoji-glow', ch.glowColor);
+    card.style.setProperty('--char-color', ch.color);
+    card.innerHTML = `
+      <div class="char-emoji">${ch.emoji}</div>
+      <div class="char-name">${ch.name}</div>
+      <div class="char-title-label" style="color:${ch.color}">${ch.title}</div>
+      <div class="char-stats">
+        ${statBar('PWR', ch.stats.power, ch.color)}
+        ${statBar('SPD', ch.stats.speed, ch.color)}
+        ${statBar('DEF', ch.stats.defense, ch.color)}
+        ${statBar('SPC', ch.stats.special, ch.color)}
+      </div>
+      <div class="char-special">${ch.specialName}</div>
+    `;
+    card.addEventListener('click', () => selectChar(i, card));
+    card.addEventListener('touchend', (e) => { e.preventDefault(); selectChar(i, card); });
+    grid.appendChild(card);
+  });
+}
+
+function statBar(label, val, color) {
+  return `<div class="stat-row"><span style="width:28px">${label}</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${val}%;background:${color}"></div></div></div>`;
+}
+
+function selectChar(index, card) {
+  document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedChar = index;
+  document.getElementById('fightBtn').classList.add('visible');
+}
+
+// ===================== FIGHTER CLASS =====================
+class Fighter {
+  constructor(charData, x, facing, isAI) {
+    this.char = charData;
+    this.x = x;
+    this.y = 0;
+    this.vx = 0;
+    this.vy = 0;
+    this.facing = facing; // 1 = right, -1 = left
+    this.isAI = isAI;
+    this.hp = 100;
+    this.sp = 0;
+    this.state = 'idle'; // idle, walk, jump, punch, kick, special, block, hit, ko
+    this.stateTimer = 0;
+    this.animFrame = 0;
+    this.animTimer = 0;
+    this.comboCount = 0;
+    this.comboTimer = 0;
+    this.blockTimer = 0;
+    this.hitStun = 0;
+    this.width = 60;
+    this.height = 100;
+    this.groundY = 0;
+    this.speed = 2.5 + (charData.stats.speed / 100) * 2;
+    this.jumpPower = -12;
+    this.attackHit = false;
+    this.flashTimer = 0;
+
+    // AI
+    this.aiTimer = 0;
+    this.aiAction = null;
+    this.aiDifficulty = 0.6;
+  }
+
+  get isOnGround() { return this.y >= this.groundY; }
+
+  get hitbox() {
+    return {
+      x: this.x - this.width / 2,
+      y: this.groundY - this.height + this.y - this.groundY,
+      w: this.width,
+      h: this.height
+    };
+  }
+
+  get attackBox() {
+    const atk = this.char.attacks[this.state];
+    if (!atk) return null;
+    const range = atk.range || 60;
+    return {
+      x: this.facing === 1 ? this.x + 10 : this.x - 10 - range,
+      y: this.groundY - this.height + 10 + (this.y - this.groundY),
+      w: range,
+      h: this.height - 20
+    };
+  }
+
+  update(dt, opponent) {
+    // Timers
+    if (this.stateTimer > 0) this.stateTimer -= dt;
+    if (this.comboTimer > 0) { this.comboTimer -= dt; if (this.comboTimer <= 0) this.comboCount = 0; }
+    if (this.hitStun > 0) this.hitStun -= dt;
+    if (this.flashTimer > 0) this.flashTimer -= dt;
+    if (this.blockTimer > 0) this.blockTimer -= dt;
+
+    this.animTimer += dt;
+    if (this.animTimer > 0.15) { this.animTimer = 0; this.animFrame = (this.animFrame + 1) % 4; }
+
+    // SP regen
+    if (this.sp < 100) this.sp = Math.min(100, this.sp + dt * 8);
+
+    // Face opponent
+    if (this.state !== 'hit' && this.state !== 'ko') {
+      this.facing = opponent.x > this.x ? 1 : -1;
+    }
+
+    // Gravity
+    if (!this.isOnGround) {
+      this.vy += 30 * dt;
+      this.y += this.vy * dt * 60;
+      if (this.y >= this.groundY) {
+        this.y = this.groundY;
+        this.vy = 0;
+      }
+    }
+
+    // Movement
+    if (this.hitStun <= 0 && this.state !== 'ko') {
+      this.x += this.vx * dt * 60;
+    }
+
+    // Bounds
+    this.x = Math.max(30, Math.min(canvasW - 30, this.x));
+
+    // State transitions
+    if (this.stateTimer <= 0) {
+      if (this.state === 'punch' || this.state === 'kick' || this.state === 'special' || this.state === 'hit') {
+        this.state = 'idle';
+        this.attackHit = false;
+      }
+    }
+
+    // AI
+    if (this.isAI && this.hp > 0) this.updateAI(dt, opponent);
+  }
+
+  updateAI(dt, player) {
+    this.aiTimer -= dt;
+    if (this.aiTimer > 0) return;
+    this.aiTimer = 0.2 + Math.random() * 0.4;
+
+    const dist = Math.abs(this.x - player.x);
+
+    // Block if player is attacking nearby
+    if ((player.state === 'punch' || player.state === 'kick' || player.state === 'special') && dist < 100) {
+      if (Math.random() < this.aiDifficulty * 0.7) {
+        this.doBlock();
+        return;
+      }
+    }
+
+    if (dist > 120) {
+      // Move toward player
+      this.vx = this.facing * this.speed * 0.7;
+      this.state = 'walk';
+      // Sometimes jump
+      if (Math.random() < 0.05 && this.isOnGround) this.doJump();
+    } else if (dist > 60) {
+      // Attack range
+      if (this.hitStun <= 0 && this.state === 'idle' || this.state === 'walk') {
+        const r = Math.random();
+        if (r < 0.3) this.doPunch();
+        else if (r < 0.55) this.doKick();
+        else if (r < 0.65 && this.sp >= 100) this.doSpecial();
+        else { this.vx = this.facing * this.speed * 0.5; this.state = 'walk'; }
+      }
+    } else {
+      // Too close, sometimes back off
+      if (Math.random() < 0.3) {
+        this.vx = -this.facing * this.speed * 0.5;
+        this.state = 'walk';
+      } else {
+        if (Math.random() < 0.5) this.doPunch();
+        else this.doKick();
+      }
+    }
+  }
+
+  doPunch() {
+    if (this.state === 'punch' || this.state === 'kick' || this.state === 'special' || this.hitStun > 0 || this.hp <= 0) return;
+    this.state = 'punch';
+    this.stateTimer = 0.3;
+    this.attackHit = false;
+    this.vx = 0;
+  }
+
+  doKick() {
+    if (this.state === 'punch' || this.state === 'kick' || this.state === 'special' || this.hitStun > 0 || this.hp <= 0) return;
+    this.state = 'kick';
+    this.stateTimer = 0.4;
+    this.attackHit = false;
+    this.vx = 0;
+  }
+
+  doSpecial() {
+    if (this.state === 'punch' || this.state === 'kick' || this.state === 'special' || this.hitStun > 0 ||
